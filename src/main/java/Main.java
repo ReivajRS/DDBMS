@@ -34,8 +34,8 @@ public class Main {
         View view = new View();
         Neo4j neo4j = new Neo4j("neo4j+s://883e4884.databases.neo4j.io", "neo4j", "_aItXcqUubEUCoCcH6YLZwMro2SysElEYlRYTJupsI4");
         MongoDB mongo =new MongoDB("tesebada","carlosdaniel","7rLrp3XKjgVR5WmM");
-        SQLServer sql = new SQLServer("tesebadabro.database.windows.net","TESEBADA","brocsm","PuroCoachMoy@");
-        MainController controller = new MainController(view, mongo, neo4j, sql);
+//        SQLServer sql = new SQLServer("tesebadabro.database.windows.net","TESEBADA","brocsm","PuroCoachMoy@");
+//        MainController controller = new MainController(view, mongo, neo4j, sql);
         view.start();
     }
 }
