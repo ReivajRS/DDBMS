@@ -2,11 +2,11 @@ package Views;
 import javax.swing.*;
 import java.awt.*;
 
-public class View extends JFrame{
+public class MainView extends JFrame{
     private JLabel title;
     private JButton btnConfiguration, btnTransactions, btnQueries;
 
-    public View(){
+    public MainView(){
         super("SGBDD");
         makeInterface();
     }

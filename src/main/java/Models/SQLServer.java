@@ -5,7 +5,7 @@ public class SQLServer {
     private Connection conexion;
     public SQLServer(String servidor, String bd, String usuario, String contrasena) {
         String url = "jdbc:sqlserver://" + servidor + ":1433;database=" + bd
-                + ";trustServerCertificate=true;loginTimeout=5";
+                + ";trustServerCertificate=true;loginTimeout=3";
         try {
             conexion = DriverManager.getConnection(url, usuario, contrasena);
             System.out.println("CONEXION SQL REALIZADA");

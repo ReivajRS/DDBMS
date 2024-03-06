@@ -18,6 +18,8 @@ import com.mongodb.client.model.Updates;
 import com.mongodb.client.result.InsertOneResult;
 import com.mongodb.client.result.UpdateResult;
 
+import java.util.ArrayList;
+
 import static com.mongodb.MongoClientSettings.getDefaultCodecRegistry;
 import static org.bson.codecs.configuration.CodecRegistries.fromProviders;
 import static org.bson.codecs.configuration.CodecRegistries.fromRegistries;
@@ -64,6 +66,47 @@ public class MongoDB {
             return false;
         }
         return true;
+    }
+
+    private Bson generateFilter(ArrayList<ConditionChain> conditions, ArrayList<String> relations){
+        Bson filterFinal = null;
+        int cnt2 = 0;
+        for(ConditionChain chain:conditions){
+            Bson filterChain = null;
+            int cnt = 0;
+            for(Condition<Object> condition : chain.getChain()){
+                if(filterChain == null){
+                    filterChain = filter(condition);
+                    continue;
+                }
+                if(chain.getRelation().get(cnt).equals("AND")){
+                    filterChain = Filters.and(filterChain,filter(condition));
+                }else{
+                    filterChain = Filters.or(filterChain,filter(condition));
+                }
+                cnt++;
+            }
+
+            if(filterFinal == null){
+                filterFinal = filterChain;
+                continue;
+            }
+            if(relations.get(cnt2).equals("AND")){
+                filterFinal = Filters.and(filterFinal,filterChain);
+            }else{
+                filterFinal = Filters.or(filterFinal,filterChain);
+            }
+            cnt2++;
+        }
+        return filterFinal;
+    }
+
+    private Bson filter(Condition<Object> condition){
+        switch (condition.getComparison()){
+            case "eq":
+                return Filters.eq(condition.getAttribute(),condition.getValue());
+        }
+        return null;
     }
 
     public void commitTransaction() {
