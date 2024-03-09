@@ -27,8 +27,6 @@ public class MainController implements ActionListener {
         this.transactionController = new TransactionController(transactionView, mongoDB, neo4j, sqlServer);
         this.queryController = new QueryController(queryView, mongoDB, neo4j, sqlServer);
 
-
-
         setListeners();
     }
 

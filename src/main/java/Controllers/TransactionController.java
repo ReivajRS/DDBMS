@@ -23,7 +23,7 @@ public class TransactionController implements ActionListener {
         transactionView.setVisible(visible);
     }
 
-    private void setListener() {
+    private void setListeners() {
         transactionView.getBtnExecute().addActionListener(this);
     }
 

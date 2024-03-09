@@ -25,7 +25,7 @@ public class QueryController implements ActionListener {
         queryView.setVisible(visible);
     }
 
-    private void setListener() {
+    private void setListeners() {
         queryView.getBtnSearch().addActionListener(this);
     }
 

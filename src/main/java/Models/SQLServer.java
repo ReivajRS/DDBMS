@@ -1,6 +1,9 @@
 package Models;
 
+import javax.swing.plaf.nimbus.State;
 import java.sql.*;
+import java.util.ArrayList;
+
 public class SQLServer {
     private Connection conexion;
     public SQLServer(String servidor, String bd, String usuario, String contrasena) {
@@ -53,5 +56,26 @@ public class SQLServer {
         }catch (Exception e) {
             rollbackTransaction();
         }
+    }
+
+
+    // Configuration
+
+    public ArrayList<String[]> recoverConfiguration() {
+        ArrayList<String[]> configuration = new ArrayList<>();
+        try {
+            Statement st = conexion.createStatement();
+            ResultSet rs = st.executeQuery("SELECT * FROM Fragmento");
+            while (rs.next()) {
+                String[] tuple = new String[7];
+                for (int i = 0; i < 7; i++)
+                    tuple[i] = rs.getObject(i+1).toString();
+                configuration.add(tuple);
+            }
+        }
+        catch (Exception e) {
+            System.err.println(e.getMessage());
+        }
+        return configuration;
     }
 }

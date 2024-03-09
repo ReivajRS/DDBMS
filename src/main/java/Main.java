@@ -37,11 +37,12 @@ public class Main {
         ConfigurationView configurationView = new ConfigurationView();
         TransactionView transactionView = new TransactionView();
         QueryView queryView = new QueryView();
-        Neo4j neo4j = new Neo4j("neo4j+s://883e4884.databases.neo4j.io", "neo4j", "_aItXcqUubEUCoCcH6YLZwMro2SysElEYlRYTJupsI4");
-        MongoDB mongo =new MongoDB("tesebada","carlosdaniel","7rLrp3XKjgVR5WmM");
-        SQLServer sql = new SQLServer("tesebadabro.database.windows.net","TESEBADA","brocsm","PuroCoachMoy@");
-        SQLServer sqlConfiguration = new SQLServer("localhost", "DBConfiguration", "sa", "sa");
-        MainController controller = new MainController(view, configurationView, transactionView, queryView, mongo, neo4j, sql);
+//        Neo4j neo4j = new Neo4j("neo4j+s://883e4884.databases.neo4j.io", "neo4j", "_aItXcqUubEUCoCcH6YLZwMro2SysElEYlRYTJupsI4");
+//        MongoDB mongo =new MongoDB("tesebada","carlosdaniel","7rLrp3XKjgVR5WmM");
+//        SQLServer sql = new SQLServer("tesebadabro.database.windows.net","TESEBADA","brocsm","PuroCoachMoy@");
+//        SQLServer sqlConfiguration = new SQLServer("localhost", "DBConfiguration", "sa", "sa");
+//        MainController controller = new MainController(view, configurationView, transactionView, queryView, mongo, neo4j, sql);
+        MainController controller = new MainController(view, configurationView, transactionView, queryView, null, null, null);
         view.start();
     }
 }
