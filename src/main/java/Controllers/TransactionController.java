@@ -1,5 +1,6 @@
 package Controllers;
 
+import Models.Database;
 import Models.MongoDB;
 import Models.Neo4j;
 import Models.SQLServer;
@@ -8,15 +9,9 @@ import java.awt.event.*;
 
 public class TransactionController implements ActionListener {
     private TransactionView transactionView;
-    private MongoDB mongoDB;
-    private Neo4j neo4j;
-    private SQLServer sqlServer;
 
-    public TransactionController(TransactionView transactionView, MongoDB mongoDB, Neo4j neo4j, SQLServer sqlServer) {
+    public TransactionController(TransactionView transactionView, Database database) {
         this.transactionView = transactionView;
-        this.mongoDB = mongoDB;
-        this.neo4j = neo4j;
-        this.sqlServer = sqlServer;
     }
 
     public void setVisible(boolean visible){
@@ -30,7 +25,8 @@ public class TransactionController implements ActionListener {
     @Override
     public void actionPerformed(ActionEvent e) {
         if(e.getSource() == transactionView.getBtnExecute()){
-
+            String transaction = transactionView.getTxtTransaction().getText();
+            System.out.println(transaction);
             return;
         }
     }

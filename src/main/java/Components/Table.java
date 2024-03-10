@@ -9,6 +9,7 @@ public class Table extends JScrollPane {
 
     public Table(String[] columnHeaders) {
         table = new JTable();
+        table.setEnabled(false);
         model = new DefaultTableModel();
         model.setColumnIdentifiers(columnHeaders);
         table.setModel(model);

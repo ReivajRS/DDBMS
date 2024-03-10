@@ -1,24 +1,21 @@
 package Controllers;
 
-import Models.MongoDB;
-import Models.Neo4j;
-import Models.SQLServer;
+import Models.*;
 import Views.ConfigurationView;
 
+import javax.swing.*;
 import java.awt.event.*;
 import java.util.ArrayList;
 
 public class ConfigurationController implements ActionListener {
-    private MongoDB mongoDB;
-    private Neo4j neo4j;
-    private SQLServer sqlServer, dbConfiguration;
+    private Database database;
+    private SQLServer dbConfiguration;
     private ConfigurationView configurationView;
-    public ConfigurationController(ConfigurationView configurationView, MongoDB mongoDB, Neo4j neo4j, SQLServer sqlServer){
+//    private AddFragmentController addFragmentController;
+    public ConfigurationController(ConfigurationView configurationView, Database database, SQLServer dbConfiguration){
         this.configurationView= configurationView;
-        this.mongoDB = mongoDB;
-        this.neo4j = neo4j;
-        this.sqlServer = sqlServer;
-        dbConfiguration = new SQLServer("localhost", "DBConfiguration", "sa", "sa");
+        this.dbConfiguration = dbConfiguration;
+//        addFragmentController = new AddFragmentController(configurationView.getAddFragmentDialog(), dbConfiguration);
         setListeners();
     }
 
@@ -29,31 +26,80 @@ public class ConfigurationController implements ActionListener {
 
     private void fillTable() {
         configurationView.getTable().getModel().getDataVector().removeAllElements();
-        ArrayList<String[]> configuration = dbConfiguration.recoverConfiguration();
-        for (String[] tuple : configuration)
+//        ArrayList<String[]> configuration = dbConfiguration.recoverConfiguration();
+        ArrayList<Fragment> fragments = dbConfiguration.selectFragments();
+        for (Fragment fragment : fragments) {
+            String[] tuple = new String[configurationView.getTable().getTable().getColumnCount()];
+            tuple[0] = fragment.getIdFragment().toString();
+            tuple[1] = fragment.getDistributedTable();
+            tuple[2] = fragment.getDBMS();
+            tuple[3] = fragment.getDB();
+            tuple[4] = fragment.getURI();
+            tuple[5] = fragment.getCriteria();
+            tuple[6] = fragment.getCriteriaValue();
+            tuple[7] = fragment.getAttributesString();
             configurationView.getTable().getModel().addRow(tuple);
-        configurationView.revalidate();
-        configurationView.repaint();
+        }
+
+//        for (String[] tuple : configuration)
+//            configurationView.getTable().getModel().addRow(tuple);
+        configurationView.refresh();
     }
 
     private void setListeners() {
         configurationView.getBtnAddFragment().addActionListener(this);
         configurationView.getBtnDeleteFragment().addActionListener(this);
+        configurationView.getAddFragmentDialog().getBtnAdd().addActionListener(this);
+        configurationView.getAddFragmentDialog().getBtnClear().addActionListener(this);
     }
 
     @Override
     public void actionPerformed(ActionEvent e) {
         if (e.getSource() == configurationView.getBtnAddFragment()) {
-            configurationView.getDialogAddFragment().clear();
-            configurationView.getDialogAddFragment().setVisible(true);
+            configurationView.getAddFragmentDialog().clear();
+            configurationView.getAddFragmentDialog().setVisible(true);
             return;
         }
+
         if (e.getSource() == configurationView.getBtnDeleteFragment()) {
             String answer = configurationView.showDeleteMessage();
             System.out.println(answer);
-            if (answer.isEmpty())
+            if (answer.isBlank())
                 return;
-            // TODO: Delete the fragment from the table on DBConfiguration
+            if (!answer.matches("[0-9]+")) {
+                JOptionPane.showMessageDialog(configurationView, "Please enter an ID");
+                return;
+            }
+            if (!dbConfiguration.deleteFragment(Integer.parseInt(answer))) {
+                JOptionPane.showMessageDialog(configurationView, "An error has occurred deleting the fragment");
+                return;
+            }
+            JOptionPane.showMessageDialog(configurationView, "Fragment deleted successfully, restart the application to see the changes");
+            fillTable();
+            configurationView.refresh();
+            return;
+        }
+
+        if (e.getSource() == configurationView.getAddFragmentDialog().getBtnAdd()) {
+            String[] values = configurationView.getAddFragmentDialog().getValues();
+            for (String s : values)
+                if (s.isBlank()) {
+                    JOptionPane.showMessageDialog(configurationView, "Please enter all the values");
+                    return;
+                }
+            if (!dbConfiguration.addFragment(values)) {
+                JOptionPane.showMessageDialog(configurationView, "An error has occurred adding the fragment");
+                return;
+            }
+            JOptionPane.showMessageDialog(configurationView, "Fragment added successfully, restart the application to see the changes");
+            fillTable();
+            configurationView.refresh();
+            return;
+        }
+
+        if (e.getSource() == configurationView.getAddFragmentDialog().getBtnClear()) {
+            configurationView.getAddFragmentDialog().clear();
+            return;
         }
     }
 }

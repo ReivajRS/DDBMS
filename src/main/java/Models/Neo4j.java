@@ -32,7 +32,7 @@ public class Neo4j {
             session = driver.session(SessionConfig.builder().withDatabase("neo4j").build());
             transaction = session.beginTransaction();
             transaction.run(
-                    "MERGE (c:Cliente {IdCliente: $id, Nombre: $nombre, Estado: $estado, Credito: $credito, Deuda: $deuda})",
+                    "MERGE (c:Clientes {IdCliente: $id, Nombre: $nombre, Estado: $estado, Credito: $credito, Deuda: $deuda})",
                     Map.of("id", cliente.getIdCliente(), "nombre", cliente.getNombre(), "estado", cliente.getEstado(),
                             "credito", cliente.getCredito(), "deuda", cliente.getDeuda())
             );
@@ -50,7 +50,7 @@ public class Neo4j {
             session = driver.session(SessionConfig.builder().withDatabase("neo4j").build());
             transaction = session.beginTransaction();
             Result result = transaction.run(
-                    "MATCH (c:Cliente) RETURN c"
+                    "MATCH (c:Clientes) RETURN c"
             );
             ArrayList<Cliente> tuples = new ArrayList<>();
             while (result.hasNext()) {
@@ -78,7 +78,7 @@ public class Neo4j {
             session = driver.session(SessionConfig.builder().withDatabase("neo4j").build());
             transaction = session.beginTransaction();
             Result result = transaction.run(
-                    "MATCH (c:Cliente) RETURN " + makeSelectedAttributesString(attributes, "c")
+                    "MATCH (c:Clientes) RETURN " + makeSelectedAttributesString(attributes, "c")
             );
             ArrayList<Cliente> tuples = new ArrayList<>();
             while (result.hasNext()) {

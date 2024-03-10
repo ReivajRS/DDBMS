@@ -3,11 +3,10 @@ import javax.swing.*;
 import java.awt.*;
 
 public class MainView extends JFrame{
-    private JLabel title;
     private JButton btnConfiguration, btnTransactions, btnQueries;
 
     public MainView(){
-        super("SGBDD");
+        super("DDBMS");
         makeInterface();
     }
 
@@ -18,7 +17,7 @@ public class MainView extends JFrame{
         setResizable(false);
         setLayout(null);
 
-        title = new JLabel("BRO Company", JLabel.CENTER);
+        JLabel title = new JLabel("BRO Star", JLabel.CENTER);
         title.setFont(new Font("Serif", Font.BOLD, 40));
         btnConfiguration = new JButton("DDB Configuration");
         btnTransactions = new JButton("Transactions");

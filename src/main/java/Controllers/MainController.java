@@ -1,5 +1,6 @@
 package Controllers;
 
+import Models.Database;
 import Models.MongoDB;
 import Models.Neo4j;
 import Models.SQLServer;
@@ -16,16 +17,14 @@ public class MainController implements ActionListener {
     private ConfigurationController configurationController;
     private TransactionController transactionController;
     private QueryController queryController;
-    private MongoDB mongoDB;
-    private Neo4j neo4j;
-    private SQLServer sqlServer;
+    private Database database;
 
-    public MainController(MainView mainView,ConfigurationView configurationView,TransactionView transactionView, QueryView queryView, MongoDB mongoDB, Neo4j neo4j, SQLServer sqlServer) {
+    public MainController(MainView mainView,ConfigurationView configurationView,TransactionView transactionView, QueryView queryView, Database database, SQLServer dbConfiguration) {
         this.mainView = mainView;
 
-        this.configurationController = new ConfigurationController(configurationView, mongoDB, neo4j, sqlServer);
-        this.transactionController = new TransactionController(transactionView, mongoDB, neo4j, sqlServer);
-        this.queryController = new QueryController(queryView, mongoDB, neo4j, sqlServer);
+        this.configurationController = new ConfigurationController(configurationView, database, dbConfiguration);
+        this.transactionController = new TransactionController(transactionView, database);
+        this.queryController = new QueryController(queryView, database);
 
         setListeners();
     }

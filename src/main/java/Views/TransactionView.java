@@ -19,7 +19,7 @@ public class TransactionView extends JDialog {
         setLayout(null);
         setModal(true);
 
-        JLabel lblTitle = new JLabel("Transaction",JLabel.CENTER);
+        JLabel lblTitle = new JLabel("Transactions",JLabel.CENTER);
         lblTitle.setFont(new Font("Serif", Font.BOLD, 30));
         JLabel lblEnter = new JLabel("Enter the query");
         txtTransaction = new JTextArea();
