@@ -8,11 +8,11 @@ import java.awt.event.*;
 import java.util.ArrayList;
 
 public class ConfigurationController implements ActionListener {
-    private Database database;
+    private DatabaseConnections databaseConnections;
     private SQLServer dbConfiguration;
     private ConfigurationView configurationView;
 //    private AddFragmentController addFragmentController;
-    public ConfigurationController(ConfigurationView configurationView, Database database, SQLServer dbConfiguration){
+    public ConfigurationController(ConfigurationView configurationView, DatabaseConnections databaseConnections, SQLServer dbConfiguration){
         this.configurationView= configurationView;
         this.dbConfiguration = dbConfiguration;
 //        addFragmentController = new AddFragmentController(configurationView.getAddFragmentDialog(), dbConfiguration);
@@ -26,7 +26,6 @@ public class ConfigurationController implements ActionListener {
 
     private void fillTable() {
         configurationView.getTable().getModel().getDataVector().removeAllElements();
-//        ArrayList<String[]> configuration = dbConfiguration.recoverConfiguration();
         ArrayList<Fragment> fragments = dbConfiguration.selectFragments();
         for (Fragment fragment : fragments) {
             String[] tuple = new String[configurationView.getTable().getTable().getColumnCount()];
@@ -40,9 +39,6 @@ public class ConfigurationController implements ActionListener {
             tuple[7] = fragment.getAttributesString();
             configurationView.getTable().getModel().addRow(tuple);
         }
-
-//        for (String[] tuple : configuration)
-//            configurationView.getTable().getModel().addRow(tuple);
         configurationView.refresh();
     }
 

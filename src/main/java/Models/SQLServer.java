@@ -1,50 +1,97 @@
 package Models;
 
-import javax.swing.plaf.nimbus.State;
+import javax.swing.*;
 import java.sql.*;
 import java.util.ArrayList;
 
-public class SQLServer {
+public class SQLServer extends Database {
     private Connection conexion;
-    public SQLServer(String servidor, String bd, String usuario, String contrasena) {
+    private String tableName;
+    private String[] attributes;
+    public SQLServer(String servidor, String bd, String tableName, String usuario, String contrasena, String[] attributes) {
+        this.tableName = tableName;
+        this.attributes = attributes;
         String url = "jdbc:sqlserver://" + servidor + ":1433;database=" + bd
-                + ";trustServerCertificate=true;loginTimeout=3";
+                + ";trustServerCertificate=true;loginTimeout=30";
         try {
             conexion = DriverManager.getConnection(url, usuario, contrasena);
-            System.out.println("CONEXION SQL REALIZADA");
+            System.out.println("SQL connection established successfully");
         } catch (SQLException e) {
             System.err.println(e.getMessage());
         }
     }
 
-    public boolean insert(Cliente cliente){
-        String query = "INSERT INTO CLIENTES VALUES(?,?,?,?,?)";
-        try{
-            PreparedStatement st = conexion.prepareStatement(query);
-            st.setInt(1,cliente.getIdCliente());
-            st.setString(2,cliente.getNombre());
-            st.setString(3,cliente.getEstado());
-            st.setDouble(4,cliente.getCredito());
-            st.setDouble(5,cliente.getDeuda());
-            conexion.setAutoCommit(false);
-            st.executeUpdate();
-        }catch (SQLException e){
-            System.out.println(e.getMessage());
-            rollbackTransaction();
-            return false;
+    public SQLServer(String servidor, String bd, String usuario, String contrasena) {
+        String url = "jdbc:sqlserver://" + servidor + ":1433;database=" + bd
+                + ";trustServerCertificate=true;loginTimeout=30";
+        try {
+            conexion = DriverManager.getConnection(url, usuario, contrasena);
+            System.out.println("SQL Configuration connection established successfully");
+        } catch (SQLException e) {
+            System.err.println(e.getMessage());
         }
-        return true;
     }
 
-    public ArrayList<Cliente> select(String query){
+    private String transformStatement(String statement){
+        statement = statement.toLowerCase().trim();
+        statement = statement.replace("clientes",tableName);
+        statement = statement.replaceAll("idcliente",attributes[0]);
+        statement = statement.replaceAll("nombre",attributes[1]);
+        statement = statement.replaceAll("estado",attributes[2]);
+        statement = statement.replaceAll("credito",attributes[3]);
+        statement = statement.replaceAll("deuda",attributes[4]);
+        return statement;
+    }
+
+    @Override
+    public ArrayList<Cliente> makeQuery(String query){
+        if(conexion == null){
+            JOptionPane.showMessageDialog(null,"Fallen Fragment");
+            return null;
+        }
+        query = transformStatement(query);
+        String withoutWhere = query.split("from")[0];
+        boolean[] hasColumn = {
+                withoutWhere.contains(attributes[0]),
+                withoutWhere.contains(attributes[1]),
+                withoutWhere.contains(attributes[2]),
+                withoutWhere.contains(attributes[3]),
+                withoutWhere.contains(attributes[4])
+        };
+        boolean hasAsterisk = withoutWhere.contains("*");
         ArrayList<Cliente> customers = new ArrayList<>();
         try{
-
             Statement st = conexion.createStatement();
             ResultSet rs = st.executeQuery(query);
             while(rs.next()){
-                customers.add(new Cliente(rs.getInt("idCliente"),rs.getString("nombre"),
-                        rs.getString("estado"),rs.getDouble("credito"),rs.getDouble("deuda")));
+                if(hasAsterisk){
+                    customers.add(new Cliente(
+                            rs.getInt(1),
+                            rs.getString(2),
+                            rs.getString(3),
+                            rs.getDouble(4),
+                            rs.getDouble(5)
+                    ));
+                    continue;
+                }
+                Cliente customer = new Cliente();
+                int cnt = 1;
+                if(hasColumn[0]){
+                    customer.setIdcliente(rs.getInt(cnt++));
+                }
+                if(hasColumn[1]){
+                    customer.setNombre(rs.getString(cnt++));
+                }
+                if(hasColumn[2]){
+                    customer.setEstado(rs.getString(cnt++));
+                }
+                if(hasColumn[3]){
+                    customer.setCredito(rs.getDouble(cnt++));
+                }
+                if(hasColumn[4]){
+                    customer.setDeuda(rs.getDouble(cnt));
+                }
+                customers.add(customer);
             }
             st.close();
         }catch (SQLException e){
@@ -53,7 +100,9 @@ public class SQLServer {
         }
         return customers;
     }
-    public boolean writeOperation(String statement){
+    @Override
+    public boolean makeTransaction(String statement){
+        statement = transformStatement(statement);
         try {
             Statement st =conexion.createStatement();
             conexion.setAutoCommit(false);
@@ -67,7 +116,7 @@ public class SQLServer {
         return true;
     }
 
-
+    @Override
     public void commitTransaction() {
         try{
             conexion.commit();
@@ -79,37 +128,15 @@ public class SQLServer {
 
 
     }
-
+    @Override
     public void rollbackTransaction() {
         try{
             conexion.rollback();
             conexion.setAutoCommit(true);
             System.out.println("Transaction rolled back SQLServer");
         }catch (Exception e) {
-            rollbackTransaction();
+            return;
         }
-    }
-
-
-    // Configuration
-
-    public ArrayList<String[]> recoverConfiguration() {
-        ArrayList<String[]> configuration = new ArrayList<>();
-        try {
-            Statement st = conexion.createStatement();
-            ResultSet rs = st.executeQuery("SELECT * FROM Fragmento");
-            while (rs.next()) {
-                String[] tuple = new String[7];
-                for (int i = 0; i < 7; i++)
-                    tuple[i] = rs.getObject(i+1).toString();
-                configuration.add(tuple);
-            }
-            st.close();
-        }
-        catch (Exception e) {
-            System.err.println(e.getMessage());
-        }
-        return configuration;
     }
 
     public boolean addFragment(String[] values) {
@@ -163,7 +190,37 @@ public class SQLServer {
         return fragments;
     }
 
-    public int getId(){
+    public String getZoneByState(String state){
+        try {
+            Statement st = conexion.createStatement();
+            ResultSet rs = st.executeQuery("SELECT ZONE FROM STATE_ZONE WHERE STATE = '"+state+"'");
+            rs.next();
+            if(rs.wasNull()) return "";
+            return rs.getString(1).toLowerCase();
+        }
+        catch (Exception e) {
+            System.err.println(e.getMessage());
+            return "";
+        }
+    }
+
+    public ArrayList<String> getZonesByQuery(String query){
+        ArrayList<String> zones = new ArrayList<>();
+        try {
+            Statement st = conexion.createStatement();
+            ResultSet rs = st.executeQuery(query);
+            while(rs.next()){
+                zones.add(rs.getString(1));
+            }
+        }
+        catch (Exception e) {
+            System.err.println(e.getMessage());
+            return zones;
+        }
+        return zones;
+    }
+
+    public int getID(){
         String query= "DECLARE @ID INT "+
                 "EXEC SP_GetID @ID OUTPUT "+
                 "SELECT ID = @ID";
@@ -176,5 +233,10 @@ public class SQLServer {
             System.err.println(e.getMessage());
         }
         return -1;
+    }
+
+    @Override
+    public void run() {
+
     }
 }

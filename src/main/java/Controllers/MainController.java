@@ -1,8 +1,6 @@
 package Controllers;
 
-import Models.Database;
-import Models.MongoDB;
-import Models.Neo4j;
+import Models.DatabaseConnections;
 import Models.SQLServer;
 import Views.ConfigurationView;
 import Views.MainView;
@@ -17,14 +15,15 @@ public class MainController implements ActionListener {
     private ConfigurationController configurationController;
     private TransactionController transactionController;
     private QueryController queryController;
-    private Database database;
+    private DatabaseConnections databaseConnections;
 
-    public MainController(MainView mainView,ConfigurationView configurationView,TransactionView transactionView, QueryView queryView, Database database, SQLServer dbConfiguration) {
+    public MainController(MainView mainView, ConfigurationView configurationView, TransactionView transactionView,
+                          QueryView queryView, DatabaseConnections databaseConnections, SQLServer dbConfiguration) {
         this.mainView = mainView;
 
-        this.configurationController = new ConfigurationController(configurationView, database, dbConfiguration);
-        this.transactionController = new TransactionController(transactionView, database);
-        this.queryController = new QueryController(queryView, database);
+        this.configurationController = new ConfigurationController(configurationView, databaseConnections, dbConfiguration);
+        this.transactionController = new TransactionController(transactionView, databaseConnections,dbConfiguration);
+        this.queryController = new QueryController(queryView, databaseConnections,dbConfiguration);
 
         setListeners();
     }
@@ -38,17 +37,14 @@ public class MainController implements ActionListener {
     @Override
     public void actionPerformed(ActionEvent e) {
         if (e.getSource() == mainView.getBtnConfiguration()) {
-            System.out.println("Configuration");
             configurationController.setVisible(true);
             return;
         }
         if (e.getSource() == mainView.getBtnTransactions()) {
-            System.out.println("Transactions");
             transactionController.setVisible(true);
             return;
         }
         if (e.getSource() == mainView.getBtnQueries()) {
-            System.out.println("Queries");
             queryController.setVisible(true);
             return;
         }

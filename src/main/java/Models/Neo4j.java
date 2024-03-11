@@ -1,156 +1,140 @@
 package Models;
 
-import org.neo4j.driver.*;
-import org.neo4j.driver.Record;
-import org.neo4j.driver.types.Node;
-import org.neo4j.driver.util.Pair;
-
+import java.sql.*;
 import java.util.ArrayList;
-import java.util.Map;
 
-public class Neo4j {
-    private final String dbUri, dbUser, dbPassword;
-    private Driver driver;
-    private Session session;
-    private Transaction transaction;
-
-    public Neo4j(String dbUri, String dbUser, String dbPassword) {
-        this.dbUri = dbUri;
-        this.dbUser = dbUser;
-        this.dbPassword = dbPassword;
+public class Neo4j extends Database {
+    private Connection connection;
+    private String tableName;
+    private String[] attributes;
+    public Neo4j(String uri, String user, String password, String tableName, String[] attributes) {
+        String server = "jdbc:" + uri;
+        this.tableName = tableName;
+        this.attributes = attributes;
         try {
-            driver = GraphDatabase.driver(dbUri, AuthTokens.basic(dbUser, dbPassword));
-            System.out.println("CONEXION NEO4J REALIZADA");
-        }
-        catch (Exception e) {
+            connection = DriverManager.getConnection(server, user, password);
+            System.out.println("Neo4j connection established successfully");
+        } catch (SQLException e) {
             System.err.println(e.getMessage());
         }
     }
 
-    public boolean insert(Cliente cliente) {
+    private String transformStatement(String statement){
+        statement = statement.toLowerCase().trim();
+        statement = statement.replace("clientes",tableName);
+        statement = statement.replaceAll("idcliente",attributes[0]);
+        statement = statement.replaceAll("nombre",attributes[1]);
+        statement = statement.replaceAll("estado",attributes[2]);
+        statement = statement.replaceAll("credito",attributes[3]);
+        statement = statement.replaceAll("deuda",attributes[4]);
+        return statement;
+    }
+
+
+    @Override
+    public ArrayList<Cliente> makeQuery(String query) {
+        query = transformStatement(query);
+        String withoutWhere = query.split("from")[0];
+        boolean[] hasColumn = {
+                withoutWhere.contains(attributes[0]),
+                withoutWhere.contains(attributes[1]),
+                withoutWhere.contains(attributes[2]),
+                withoutWhere.contains(attributes[3]),
+                withoutWhere.contains(attributes[4])
+        };
+        boolean hasAsterisk = withoutWhere.contains("*");
+        ArrayList<Cliente> customers = new ArrayList<>();
         try {
-            session = driver.session(SessionConfig.builder().withDatabase("neo4j").build());
-            transaction = session.beginTransaction();
-            transaction.run(
-                    "MERGE (c:Clientes {IdCliente: $id, Nombre: $nombre, Estado: $estado, Credito: $credito, Deuda: $deuda})",
-                    Map.of("id", cliente.getIdCliente(), "nombre", cliente.getNombre(), "estado", cliente.getEstado(),
-                            "credito", cliente.getCredito(), "deuda", cliente.getDeuda())
-            );
+            Statement st = connection.createStatement();
+            String cypherQuery = connection.nativeSQL(query);
+            ResultSet rs = st.executeQuery(cypherQuery);
+            while(rs.next()){
+                if(hasAsterisk){
+                    customers.add(new Cliente(
+                            rs.getInt(attributes[0]),
+                            rs.getString(attributes[1]),
+                            rs.getString(attributes[2]),
+                            Double.parseDouble(rs.getObject(attributes[3]).toString()),
+                            Double.parseDouble(rs.getObject(attributes[4]).toString())
+                    ));
+                    continue;
+                }
+                Cliente customer = new Cliente();
+                int cnt = 1;
+                if(hasColumn[0]){
+                    customer.setIdcliente(rs.getInt(cnt++));
+                }
+                if(hasColumn[1]){
+                    customer.setNombre(rs.getString(cnt++));
+                }
+                if(hasColumn[2]){
+                    customer.setEstado(rs.getString(cnt++));
+                }
+                if(hasColumn[3]){
+                    customer.setCredito(Double.parseDouble(rs.getObject(cnt++).toString()));
+                }
+                if(hasColumn[4]){
+                    customer.setDeuda(Double.parseDouble(rs.getObject(cnt).toString()));
+                }
+                customers.add(customer);
+            }
+            st.close();
         }
         catch (Exception e) {
             System.err.println(e.getMessage());
-            rollbackTransaction();
+        }
+        return customers;
+    }
+
+    @Override
+    public boolean makeTransaction(String transaction) {
+        try {
+            transaction = transformStatement(transaction);
+            if (transaction.contains("insert")) {
+                String[] insertParts = transaction.split("values");
+                if (!insertParts[0].contains("("))
+                    insertParts[0] += "(" + attributes[0] + "," + attributes[1] + "," + attributes[2] +
+                            "," + attributes[3] + "," + attributes[4] + ")";
+                transaction = insertParts[0] + " VALUES " + insertParts[1];
+            }
+            String cypherTransaction = connection.nativeSQL(transaction);
+            connection.setAutoCommit(false);
+            Statement st = connection.createStatement();
+            st.executeUpdate(cypherTransaction);
+            st.close();
+        }
+        catch (Exception e) {
+            System.err.println(e.getMessage());
             return false;
         }
         return true;
     }
 
-    public ArrayList<Cliente> select() {
-        try {
-            session = driver.session(SessionConfig.builder().withDatabase("neo4j").build());
-            transaction = session.beginTransaction();
-            Result result = transaction.run(
-                    "MATCH (c:Clientes) RETURN c"
-            );
-            ArrayList<Cliente> tuples = new ArrayList<>();
-            while (result.hasNext()) {
-                Node node = result.next().get(0).asNode();
-                tuples.add(new Cliente(
-                        node.get("IdCliente").asInt(),
-                        node.get("Nombre").asString(),
-                        node.get("Estado").asString(),
-                        node.get("Credito").asDouble(),
-                        node.get("Deuda").asDouble()
-                ));
-            }
-            commitTransaction();
-            return tuples;
-        }
-        catch (Exception e) {
-            rollbackTransaction();
-            System.err.println(e.getMessage());
-        }
-        return new ArrayList<Cliente>();
-    }
-
-    public ArrayList<Cliente> select(String[] attributes) {
-        try {
-            session = driver.session(SessionConfig.builder().withDatabase("neo4j").build());
-            transaction = session.beginTransaction();
-            Result result = transaction.run(
-                    "MATCH (c:Clientes) RETURN " + makeSelectedAttributesString(attributes, "c")
-            );
-            ArrayList<Cliente> tuples = new ArrayList<>();
-            while (result.hasNext()) {
-                Cliente cliente = new Cliente();
-                Record record = result.next();
-                for (Pair<String, Value> r : record.fields()) {
-                    switch (r.key()) {
-                        case "IdCliente": cliente.setIdCliente(r.value().asInt());
-                        case "Nombre": cliente.setNombre(r.value().asString());
-                        case "Estado": cliente.setEstado(r.value().asString());
-                        case "Credito": cliente.setCredito(r.value().asDouble());
-                        case "Deuda": cliente.setDeuda(r.value().asDouble());
-                    }
-                }
-                tuples.add(cliente);
-            }
-            commitTransaction();
-            return tuples;
-        }
-        catch (Exception e) {
-            rollbackTransaction();
-            System.err.println(e.getMessage());
-        }
-        return new ArrayList<Cliente>();
-    }
-
-    private String makeSelectedAttributesString(String[] attributes, String variable) {
-        StringBuilder selected = new StringBuilder();
-        for (String attribute : attributes) {
-            if (!selected.isEmpty())
-                selected.append(", ");
-            selected.append(variable).append(".").append(attribute).append(" AS ").append(attribute);
-        }
-        return selected.toString();
-    }
-
-    public void delete(Map<String, String> filters) {
-        try {
-            session = driver.session(SessionConfig.builder().withDatabase("neo4j").build());
-            transaction = session.beginTransaction();
-        }
-        catch (Exception e) {
-            rollbackTransaction();
-            System.err.println(e.getMessage());
-        }
-    }
-
-    // Metodo para construir los filtros, aun pendiente
-    private String makeFilter(Map<String, String> filters, String variable) {
-        StringBuilder filter = new StringBuilder();
-        for (String key : filters.keySet()) {
-            if (!filter.isEmpty())
-                filter.append(" AND ");
-            filter.append(variable);
-            filter.append(".");
-            filter.append(filters.get(key));
-        }
-        return filter.toString();
-    }
-
+    @Override
     public void commitTransaction() {
-        transaction.commit();
-        transaction.close();
-        session.close();
-        System.out.println("Transaction commited Neo4j");
-    }
+        try{
+            connection.commit();
+            connection.setAutoCommit(true);
+            System.out.println("Transaction commited Neo4j");
+        }catch (Exception e){
+            rollbackTransaction();
+        }
 
+
+    }
+    @Override
     public void rollbackTransaction() {
-        transaction.rollback();
-        transaction.close();
-        session.close();
-        System.out.println("Transaction rolled back Neo4j");
+        try{
+            connection.rollback();
+            connection.setAutoCommit(true);
+            System.out.println("Transaction rolled back Neo4j");
+        }catch (Exception e) {
+            return;
+        }
     }
 
+    @Override
+    public void run() {
+
+    }
 }

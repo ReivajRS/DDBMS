@@ -1,32 +1,32 @@
 package Models;
 
-public class Cliente {
-    private Integer idCliente;
+public class Cliente implements Comparable<Cliente>{
+    private Integer idcliente;
     private String nombre, estado;
     private Double credito, deuda;
 
     public Cliente() {
-        this.idCliente = null;
+        this.idcliente = null;
         this.nombre = null;
         this.estado = null;
         this.credito = null;
         this.deuda = null;
     }
 
-    public Cliente(int idCliente, String nombre, String estado, double credito, double deuda) {
-        this.idCliente = idCliente;
+    public Cliente(int idcliente, String nombre, String estado, double credito, double deuda) {
+        this.idcliente = idcliente;
         this.nombre = nombre;
         this.estado = estado;
         this.credito = credito;
         this.deuda = deuda;
     }
 
-    public Integer getIdCliente() {
-        return idCliente;
+    public Integer getIdcliente() {
+        return idcliente;
     }
 
-    public void setIdCliente(Integer idCliente) {
-        this.idCliente = idCliente;
+    public void setIdcliente(Integer idcliente) {
+        this.idcliente = idcliente;
     }
 
     public String getNombre() {
@@ -64,11 +64,17 @@ public class Cliente {
     @Override
     public String toString() {
         return "Cliente{" +
-                "idCliente=" + idCliente +
+                "idcliente=" + idcliente +
                 ", nombre='" + nombre + '\'' +
                 ", estado='" + estado + '\'' +
                 ", credito=" + credito +
                 ", deuda=" + deuda +
                 '}';
+    }
+
+    @Override
+    public int compareTo(Cliente other) {
+        if(this.idcliente == null) return 1;
+        return this.idcliente.compareTo(other.idcliente);
     }
 }

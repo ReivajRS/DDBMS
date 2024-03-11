@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>org.example</groupId>
-    <artifactId>SGBDD</artifactId>
+    <artifactId>DDBMS</artifactId>
     <version>1.0-SNAPSHOT</version>
 
     <properties>
@@ -16,9 +16,9 @@
 
     <dependencies>
         <dependency>
-            <groupId>org.neo4j.driver</groupId>
-            <artifactId>neo4j-java-driver</artifactId>
-            <version>5.17.0</version>
+            <groupId>org.neo4j</groupId>
+            <artifactId>neo4j-jdbc-full-bundle</artifactId>
+            <version>6.0.0-M01</version>
         </dependency>
         <dependency>
             <groupId>org.mongodb</groupId>
@@ -34,6 +34,11 @@
             <groupId>org.apache.logging.log4j</groupId>
             <artifactId>log4j-slf4j-impl</artifactId>
             <version>2.17.1</version>
+        </dependency>
+        <dependency>
+            <groupId>com.github.vincentrussell</groupId>
+            <artifactId>sql-to-mongo-db-query-converter</artifactId>
+            <version>1.21</version>
         </dependency>
     </dependencies>
 
