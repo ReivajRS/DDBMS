@@ -82,6 +82,7 @@ public class Neo4j extends Database {
         }
         catch (Exception e) {
             System.err.println(e.getMessage());
+            return null;
         }
         return customers;
     }
@@ -94,10 +95,11 @@ public class Neo4j extends Database {
                 String[] insertParts = transaction.split("values");
                 if (!insertParts[0].contains("("))
                     insertParts[0] += "(" + attributes[0] + "," + attributes[1] + "," + attributes[2] +
-                            "," + attributes[3] + "," + attributes[4] + ")";
+                        "," + attributes[3] + "," + attributes[4] + ")";
                 transaction = insertParts[0] + " VALUES " + insertParts[1];
             }
             String cypherTransaction = connection.nativeSQL(transaction);
+            System.out.println(cypherTransaction);
             connection.setAutoCommit(false);
             Statement st = connection.createStatement();
             st.executeUpdate(cypherTransaction);
@@ -119,9 +121,8 @@ public class Neo4j extends Database {
         }catch (Exception e){
             rollbackTransaction();
         }
-
-
     }
+
     @Override
     public void rollbackTransaction() {
         try{
@@ -135,6 +136,13 @@ public class Neo4j extends Database {
 
     @Override
     public void run() {
-
+        if (statement.contains("select")) {
+            results = makeQuery(statement);
+            finalStatus = results != null;
+            return;
+        }
+        if (results != null) results.clear();
+        else results = new ArrayList<>();
+        finalStatus = makeTransaction(statement);
     }
 }

@@ -5,7 +5,7 @@ import java.sql.*;
 import java.util.ArrayList;
 
 public class SQLServer extends Database {
-    private Connection conexion;
+    private Connection connection;
     private String tableName;
     private String[] attributes;
     public SQLServer(String servidor, String bd, String tableName, String usuario, String contrasena, String[] attributes) {
@@ -14,7 +14,7 @@ public class SQLServer extends Database {
         String url = "jdbc:sqlserver://" + servidor + ":1433;database=" + bd
                 + ";trustServerCertificate=true;loginTimeout=30";
         try {
-            conexion = DriverManager.getConnection(url, usuario, contrasena);
+            connection = DriverManager.getConnection(url, usuario, contrasena);
             System.out.println("SQL connection established successfully");
         } catch (SQLException e) {
             System.err.println(e.getMessage());
@@ -25,7 +25,7 @@ public class SQLServer extends Database {
         String url = "jdbc:sqlserver://" + servidor + ":1433;database=" + bd
                 + ";trustServerCertificate=true;loginTimeout=30";
         try {
-            conexion = DriverManager.getConnection(url, usuario, contrasena);
+            connection = DriverManager.getConnection(url, usuario, contrasena);
             System.out.println("SQL Configuration connection established successfully");
         } catch (SQLException e) {
             System.err.println(e.getMessage());
@@ -45,10 +45,6 @@ public class SQLServer extends Database {
 
     @Override
     public ArrayList<Cliente> makeQuery(String query){
-        if(conexion == null){
-            JOptionPane.showMessageDialog(null,"Fallen Fragment");
-            return null;
-        }
         query = transformStatement(query);
         String withoutWhere = query.split("from")[0];
         boolean[] hasColumn = {
@@ -61,7 +57,7 @@ public class SQLServer extends Database {
         boolean hasAsterisk = withoutWhere.contains("*");
         ArrayList<Cliente> customers = new ArrayList<>();
         try{
-            Statement st = conexion.createStatement();
+            Statement st = connection.createStatement();
             ResultSet rs = st.executeQuery(query);
             while(rs.next()){
                 if(hasAsterisk){
@@ -104,8 +100,8 @@ public class SQLServer extends Database {
     public boolean makeTransaction(String statement){
         statement = transformStatement(statement);
         try {
-            Statement st =conexion.createStatement();
-            conexion.setAutoCommit(false);
+            Statement st = connection.createStatement();
+            connection.setAutoCommit(false);
             st.execute(statement);
             st.close();
         }catch (SQLException e){
@@ -119,8 +115,8 @@ public class SQLServer extends Database {
     @Override
     public void commitTransaction() {
         try{
-            conexion.commit();
-            conexion.setAutoCommit(true);
+            connection.commit();
+            connection.setAutoCommit(true);
             System.out.println("Transaction commited SQLServer");
         }catch (Exception e){
             rollbackTransaction();
@@ -131,8 +127,8 @@ public class SQLServer extends Database {
     @Override
     public void rollbackTransaction() {
         try{
-            conexion.rollback();
-            conexion.setAutoCommit(true);
+            connection.rollback();
+            connection.setAutoCommit(true);
             System.out.println("Transaction rolled back SQLServer");
         }catch (Exception e) {
             return;
@@ -141,7 +137,7 @@ public class SQLServer extends Database {
 
     public boolean addFragment(String[] values) {
         try {
-            PreparedStatement st = conexion.prepareStatement("INSERT INTO Fragment VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?)");
+            PreparedStatement st = connection.prepareStatement("INSERT INTO Fragment VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?)");
             for (int i = 0; i < values.length; i++)
                 st.setString(i + 1, values[i]);
             st.executeUpdate();
@@ -156,7 +152,7 @@ public class SQLServer extends Database {
 
     public boolean deleteFragment(int id) {
         try {
-            PreparedStatement st = conexion.prepareStatement("DELETE FROM Fragment WHERE IDFragment = ?");
+            PreparedStatement st = connection.prepareStatement("DELETE FROM Fragment WHERE IDFragment = ?");
             st.setInt(1, id);
             st.executeUpdate();
             st.close();
@@ -171,7 +167,7 @@ public class SQLServer extends Database {
     public ArrayList<Fragment> selectFragments() {
         ArrayList<Fragment> fragments = new ArrayList<>();
         try {
-            Statement st = conexion.createStatement();
+            Statement st = connection.createStatement();
             ResultSet rs = st.executeQuery("SELECT * FROM Fragment");
             while (rs.next()) {
                 Fragment fragment = new Fragment(
@@ -192,7 +188,7 @@ public class SQLServer extends Database {
 
     public String getZoneByState(String state){
         try {
-            Statement st = conexion.createStatement();
+            Statement st = connection.createStatement();
             ResultSet rs = st.executeQuery("SELECT ZONE FROM STATE_ZONE WHERE STATE = '"+state+"'");
             rs.next();
             if(rs.wasNull()) return "";
@@ -207,7 +203,7 @@ public class SQLServer extends Database {
     public ArrayList<String> getZonesByQuery(String query){
         ArrayList<String> zones = new ArrayList<>();
         try {
-            Statement st = conexion.createStatement();
+            Statement st = connection.createStatement();
             ResultSet rs = st.executeQuery(query);
             while(rs.next()){
                 zones.add(rs.getString(1));
@@ -225,7 +221,7 @@ public class SQLServer extends Database {
                 "EXEC SP_GetID @ID OUTPUT "+
                 "SELECT ID = @ID";
         try{
-            Statement st = conexion.createStatement();
+            Statement st = connection.createStatement();
             ResultSet rs = st.executeQuery(query);
             rs.next();
             return rs.getInt(1);
@@ -237,6 +233,13 @@ public class SQLServer extends Database {
 
     @Override
     public void run() {
-
+        if (statement.contains("select")) {
+            results = makeQuery(statement);
+            finalStatus = results != null;
+            return;
+        }
+        if (results != null) results.clear();
+        else results = new ArrayList<>();
+        finalStatus = makeTransaction(statement);
     }
 }

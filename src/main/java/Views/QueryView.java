@@ -28,7 +28,6 @@ public class QueryView extends JDialog {
         txtQuery = new JTextArea();
         txtQuery.setFont(new Font("tahoma", Font.PLAIN, 14));
         lblEnter.setFont(new Font("Serif", Font.PLAIN, 18));
-//        txtQuery.
         btnSearch = new JButton("Search");
 
 

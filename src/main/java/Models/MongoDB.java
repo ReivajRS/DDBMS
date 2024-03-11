@@ -28,7 +28,6 @@ public class MongoDB extends Database{
     private MongoClient mongoClient;
     private ClientSession clientSession;
     private String collection;
-
     public MongoDB(String URI,String dbName,String collection, String usuario, String contrasena) {
         this.collection = collection;
         String connectionString = "mongodb+srv://" + usuario + ":" + contrasena + URI;
@@ -80,8 +79,6 @@ public class MongoDB extends Database{
             return null;
         }
     }
-
-
 
     private Bson getUpdateChanges(String statement) {
         String updateSetRaw = statement.split("set|where")[1].trim();
@@ -229,6 +226,13 @@ public class MongoDB extends Database{
 
     @Override
     public void run() {
-
+        if (statement.contains("select")) {
+            results = makeQuery(statement);
+            finalStatus = results != null;
+            return;
+        }
+        if (results != null) results.clear();
+        else results = new ArrayList<>();
+        finalStatus = makeTransaction(statement);
     }
 }

@@ -34,13 +34,14 @@ public class UpdateAnalyzer {
         if (indexOfWhereKeyword == -1) indexOfWhereKeyword = tokens.size();
         tokens.add(indexOfWhereKeyword++, Token.COMMA);
         List<Token> attributes = Arrays.asList(Token.NOMBRE, Token.ESTADO, Token.CREDITO, Token.DEUDA);
+        List<Token> assignment = Arrays.asList(Token.EQUALS, Token.PLUS_EQUALS, Token.SUB_EQUALS, Token.MUL_EQUALS, Token.DIV_EQUALS);
         List<Token> operators = Arrays.asList(Token.PLUS, Token.MINUS, Token.TIMES, Token.DIVIDE);
         int i = 6;
         while (i < indexOfWhereKeyword) {
             if (!attributes.contains(tokens.get(i++)))
                 return false;
             if (tokens.get(i) == Token.WHITESPACE) i++;
-            if (tokens.get(i++) != Token.EQUALS) return false;
+            if (!assignment.contains(tokens.get(i++))) return false;
             if (tokens.get(i) == Token.WHITESPACE) i++;
             boolean operatorWaiting = true;
             while (tokens.get(i) != Token.COMMA) {

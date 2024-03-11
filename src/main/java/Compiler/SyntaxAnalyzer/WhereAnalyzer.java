@@ -7,10 +7,10 @@ import java.util.Arrays;
 
 public class WhereAnalyzer {
     private final List<Token> STRING_ATTRIBUTES = Arrays.asList(Token.ZONA, Token.NOMBRE, Token.ESTADO);
-    private final List<Token> INTEGER_ATTRIBUTES = Arrays.asList(Token.CREDITO, Token.DEUDA);
+    private final List<Token> INTEGER_ATTRIBUTES = Arrays.asList(Token.IDCLIENTE, Token.CREDITO, Token.DEUDA);
     private final List<Token> CONNECTORS = Arrays.asList(Token.AND, Token.OR);
     private final List<Token> OPERATORS = Arrays.asList(Token.EQUALS, Token.NOT_EQUALS, Token.LESS, Token.LESS_EQUALS,
-                                                            Token.GREATER, Token.GREATER_EQUALS);
+                                                            Token.GREATER, Token.GREATER_EQUALS, Token.LIKE);
     private final TokenArrayList tokens;
 
 
@@ -20,6 +20,8 @@ public class WhereAnalyzer {
 
     public boolean analyzeStatement() {
         if (tokens.getFirst() == Token.WHERE) tokens.removeFirst();
+        for (Token token : tokens) System.out.print(token + " ");
+        System.out.println();
         int i = 0;
         boolean isTheFirstCondition = true;
         while (i < tokens.size()) {
@@ -29,7 +31,6 @@ public class WhereAnalyzer {
             }
             if (!isTheFirstCondition) {
                 if (!CONNECTORS.contains(tokens.get(i++))) return false;
-                i++;
                 if (tokens.get(i++) != Token.WHITESPACE) return false;
             }
             isTheFirstCondition = false;
@@ -46,17 +47,23 @@ public class WhereAnalyzer {
                 if (tokens.get(++i) != Token.WHITESPACE ||
                     tokens.get(++i) != Token.LEFT_PARENTHESIS)
                     return false;
+                i++;
                 while (tokens.get(i) != Token.RIGHT_PARENTHESIS &&
                         tokens.get(i) != Token.INVALID) {
                     if (tokens.get(i) == Token.WHITESPACE) i++;
+                    System.out.println(tokens.get(i));
                     if ((isStringAttribute && tokens.get(i) != Token.STRING) ||
                         (!isStringAttribute && tokens.get(i) != Token.INTEGER && tokens.get(i) != Token.NUMBER))
                         return false;
                     i++;
+                    System.out.println(tokens.get(i));
                     if (tokens.get(i) == Token.WHITESPACE) i++;
+                    System.out.println(tokens.get(i));
                     if (tokens.get(i) == Token.COMMA) i++;
+                    System.out.println(tokens.get(i));
                 }
-                if (tokens.get(i) == Token.INVALID) return false;
+                System.out.println("- " + tokens.get(i));
+                if (tokens.get(i++) == Token.INVALID) return false;
                 continue;
             }
             if (OPERATORS.contains(tokens.get(i++))) {

@@ -17,12 +17,12 @@ public class DeleteAnalyzer {
 
         if (tokens.size() == 5) return true;
 
-        if (tokens.get(5) == Token.WHITESPACE ||
+        if (tokens.get(5) != Token.WHITESPACE ||
             tokens.get(6) != Token.WHERE ||
             tokens.get(7) != Token.WHITESPACE)
             return false;
 
-        for (int i = 0; i < 8; i++) tokens.removeFirst();
+        for (int i = 0; i < 7; i++) tokens.removeFirst();
 
         return new WhereAnalyzer(tokens).analyzeStatement();
     }

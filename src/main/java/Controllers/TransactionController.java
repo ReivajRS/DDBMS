@@ -1,5 +1,6 @@
 package Controllers;
 
+import Extra.Routines;
 import Compiler.SyntaxAnalyzer.SyntaxAnalyzer;
 import Models.Database;
 import Models.DatabaseConnections;
@@ -7,16 +8,17 @@ import Models.SQLServer;
 import Views.TransactionView;
 
 import javax.swing.*;
-import javax.xml.crypto.Data;
 import java.awt.event.*;
 import java.util.ArrayList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static java.util.regex.Pattern.*;
+
 public class TransactionController implements ActionListener {
-    private TransactionView transactionView;
-    private DatabaseConnections databaseConnections;
-    private SQLServer dbConfiguration;
+    private final TransactionView transactionView;
+    private final DatabaseConnections databaseConnections;
+    private final SQLServer dbConfiguration;
 
     public TransactionController(TransactionView transactionView, DatabaseConnections databaseConnections, SQLServer dbConfiguration) {
         this.transactionView = transactionView;
@@ -35,21 +37,21 @@ public class TransactionController implements ActionListener {
     }
 
     private ArrayList<String> getZones(String statement){
-        Pattern patron = Pattern.compile("\\b(estado|zona)\\s*(?:=|in|not\\s+in|!=)\\s*('([^']*)'|\\([^)]*\\))");
+        Pattern patron = compile("\\b(estado|zona)\\s*(?:=|in|not\\s+in|!=)\\s*('([^']*)'|\\([^)]*\\))");
         Matcher matcher = patron.matcher(statement);
-        String query = "select distinct zone from state_zone where ";
+        StringBuilder query = new StringBuilder("select distinct zone from state_zone where ");
         while (matcher.find()) {
             String condition = matcher.group(0);
-            query = query + condition + " or ";
+            query.append(condition).append(" or ");
         }
-        query = query + "1!=1";
-        query = query.replaceAll("zona","zone");
-        query = query.replaceAll("estado","state");
-        return dbConfiguration.getZonesByQuery(query);
+        query.append("1!=1");
+        query = new StringBuilder(query.toString().replaceAll("zona", "zone"));
+        query = new StringBuilder(query.toString().replaceAll("estado", "state"));
+        return dbConfiguration.getZonesByQuery(query.toString());
     }
 
     private String deleteZones(String statement){
-        Pattern patron = Pattern.compile("\\b(estado|zona)\\s*(?:=|in|not\\s+in|!=)\\s*('([^']*)'|\\([^)]*\\))");
+        Pattern patron = compile("\\b(estado|zona)\\s*(?:=|in|not\\s+in|!=)\\s*('([^']*)'|\\([^)]*\\))");
         Matcher matcher = patron.matcher(statement);
         while (matcher.find()) {
             String condition = matcher.group(0);
@@ -87,10 +89,9 @@ public class TransactionController implements ActionListener {
                 if(databaseConnections.getDatabases().get(zona).makeTransaction(statement)){
                     databaseConnections.getDatabases().get(zona).commitTransaction();
                     JOptionPane.showMessageDialog(null,"Customer has been added successfully");
-                }else{
-                    JOptionPane.showMessageDialog(null,"An error occurred");
+                    return;
                 }
-
+                JOptionPane.showMessageDialog(null,"An error has occurred");
                 return;
             }
 
@@ -98,45 +99,76 @@ public class TransactionController implements ActionListener {
                 String whereStatement = statement.split("where")[1].trim();
                 if(whereStatement.contains("zona") || whereStatement.contains("estado")){
                     ArrayList<String> zones = getZones(statement);
+                    ArrayList<Database> databases = new ArrayList<>();
+
                     statement = deleteZones(statement);
-                    boolean isWorking = true;
+
+                    Thread[] threads = new Thread[zones.size()];
+                    int i = 0;
+
                     for(String zone:zones){
                         System.out.println("Request to fragment " + zone);
-                        if(!databaseConnections.getDatabases().get(zone.toLowerCase()).makeTransaction(statement)){
-                            isWorking = false;
-                        }
+                        databases.add(databaseConnections.getDatabases().get(zone.toLowerCase()));
+                        databases.getLast().setStatement(statement);
+                        threads[i++] = new Thread(databaseConnections.getDatabases().get(zone));
                     }
-                    if(isWorking){
-                        for(String zone:zones){
-                            databaseConnections.getDatabases().get(zone.toLowerCase()).commitTransaction();
+
+                    for (Thread thread : threads)
+                        thread.start();
+
+                    while (Routines.someThreadIsRunning(threads));
+
+                    boolean someTransactionWentWrong = false;
+                    for (Database database : databases)
+                        if (!database.isFinalStatus()) {
+                            someTransactionWentWrong = true;
+                            break;
                         }
-                    }else{
-                        for(String zone:zones){
-                            databaseConnections.getDatabases().get(zone.toLowerCase()).rollbackTransaction();
-                        }
+
+                    if (someTransactionWentWrong) {
+                        JOptionPane.showMessageDialog(null, "Some fragment failed");
+                        for (Database database : databases)
+                            database.rollbackTransaction();
+                        return;
                     }
+
+                    for (Database database : databases)
+                        database.commitTransaction();
+
                     return;
                 }
             }
 
-
+            Thread[] threads = new Thread[databaseConnections.getDatabases().size()];
             System.out.println("Request to all fragments");
-            boolean isWorking = true;
-            for(Database database : databaseConnections.getDatabases().values()){
-                if(!database.makeTransaction(statement)){
-                    isWorking=false;
-                }
+            int i = 0;
+            for (Database database : databaseConnections.getDatabases().values()){
+                threads[i] = new Thread(database);
+                database.setStatement(statement);
+                i++;
             }
-            if(isWorking){
-                for(Database database : databaseConnections.getDatabases().values()){
-                    database.commitTransaction();
+
+            for (Thread thread : threads)
+                thread.start();
+
+            while (Routines.someThreadIsRunning(threads));
+
+            boolean someTransactionWentWrong = false;
+            for (Database database : databaseConnections.getDatabases().values())
+                if (!database.isFinalStatus()) {
+                    someTransactionWentWrong = true;
+                    break;
                 }
-            }else{
-                for(Database database : databaseConnections.getDatabases().values()){
+
+            if (someTransactionWentWrong) {
+                JOptionPane.showMessageDialog(null, "Some fragment failed");
+                for (Database database : databaseConnections.getDatabases().values())
                     database.rollbackTransaction();
-                }
+                return;
             }
-            return;
+
+            for (Database database : databaseConnections.getDatabases().values())
+                database.commitTransaction();
         }
     }
 }

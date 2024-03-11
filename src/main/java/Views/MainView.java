@@ -23,6 +23,11 @@ public class MainView extends JFrame{
         btnTransactions = new JButton("Transactions");
         btnQueries = new JButton("Queries");
 
+        Font font = new Font("Tahoma", Font.BOLD, 14);
+        btnConfiguration.setFont(font);
+        btnTransactions.setFont(font);
+        btnQueries.setFont(font);
+
         title.setBounds(100, 50, 600, 80);
         btnConfiguration.setBounds(200, 200, 400, 80);
         btnTransactions.setBounds(200, 300, 400, 80);

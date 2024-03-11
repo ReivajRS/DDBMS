@@ -1,10 +1,10 @@
 package Controllers;
 
+import Extra.Routines;
 import Compiler.SyntaxAnalyzer.SyntaxAnalyzer;
 import Models.Database;
 import Models.DatabaseConnections;
 import Models.Cliente;
-import Models.Fragment;
 import Models.SQLServer;
 import Views.QueryView;
 
@@ -88,28 +88,64 @@ public class QueryController implements ActionListener {
                 String whereStatement = query.split("where")[1].trim();
                 if(whereStatement.contains("zona") || whereStatement.contains("estado")){
                     ArrayList<String> zones = getZones(query);
+                    ArrayList<Database> databases = new ArrayList<>();
+
                     query = deleteZones(query);
-                    ArrayList<Cliente> customers = new ArrayList<>();
+
+                    Thread[] threads = new Thread[zones.size()];
+                    int i = 0;
 
                     for(String zone:zones){
-                        customers.addAll(databaseConnections.getDatabases().get(zone.toLowerCase()).makeQuery(query));
                         System.out.println("Request to fragment " + zone);
+                        databases.add(databaseConnections.getDatabases().get(zone.toLowerCase()));
+                        databases.getLast().setStatement(query);
+                        threads[i++] = new Thread(databaseConnections.getDatabases().get(zone));
                     }
-                   customers.sort(null);
+
+                    for (Thread thread : threads)
+                        thread.start();
+
+                    while (Routines.someThreadIsRunning(threads));
+
+                    for (Database database : databases)
+                        if (!database.isFinalStatus()) {
+                            JOptionPane.showMessageDialog(null,"fragment " + database.getClass().getName() + " failed");
+                            return;
+                        }
+
+                    ArrayList<Cliente> customers = new ArrayList<>();
+                    for (String zone : zones)
+                        customers.addAll(databaseConnections.getDatabases().get(zone.toLowerCase()).getResults());
+                    customers.sort(null);
                     fillTable(customers);
                     return;
                 }
             }
 
-            System.out.println("Request to all fragments");
-            ArrayList<Cliente> customers = new ArrayList<>();
-            for(Database database: databaseConnections.getDatabases().values()){
-                customers.addAll(database.makeQuery(query));
+            Thread[] threads = new Thread[databaseConnections.getDatabases().size()];
+            int i = 0;
+            for (Database database : databaseConnections.getDatabases().values()) {
+                database.setStatement(query);
+                threads[i] = new Thread(database);
+                i++;
             }
+
+            for (i = 0; i < databaseConnections.getDatabases().size(); i++)
+                threads[i].start();
+
+            while (Routines.someThreadIsRunning(threads));
+
+            for (Database database : databaseConnections.getDatabases().values())
+                if (!database.isFinalStatus()) {
+                    JOptionPane.showMessageDialog(null,"fragment " + database.getClass().getName() + " failed");
+                    return;
+                }
+
+            ArrayList<Cliente> customers = new ArrayList<>();
+            for(Database database: databaseConnections.getDatabases().values())
+                customers.addAll(database.getResults());
             customers.sort(null);
             fillTable(customers);
-
-            return;
         }
     }
 }

@@ -8,14 +8,11 @@ import java.awt.event.*;
 import java.util.ArrayList;
 
 public class ConfigurationController implements ActionListener {
-    private DatabaseConnections databaseConnections;
     private SQLServer dbConfiguration;
     private ConfigurationView configurationView;
-//    private AddFragmentController addFragmentController;
-    public ConfigurationController(ConfigurationView configurationView, DatabaseConnections databaseConnections, SQLServer dbConfiguration){
+    public ConfigurationController(ConfigurationView configurationView, SQLServer dbConfiguration){
         this.configurationView= configurationView;
         this.dbConfiguration = dbConfiguration;
-//        addFragmentController = new AddFragmentController(configurationView.getAddFragmentDialog(), dbConfiguration);
         setListeners();
     }
 

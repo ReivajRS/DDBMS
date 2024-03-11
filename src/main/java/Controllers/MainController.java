@@ -21,7 +21,7 @@ public class MainController implements ActionListener {
                           QueryView queryView, DatabaseConnections databaseConnections, SQLServer dbConfiguration) {
         this.mainView = mainView;
 
-        this.configurationController = new ConfigurationController(configurationView, databaseConnections, dbConfiguration);
+        this.configurationController = new ConfigurationController(configurationView, dbConfiguration);
         this.transactionController = new TransactionController(transactionView, databaseConnections,dbConfiguration);
         this.queryController = new QueryController(queryView, databaseConnections,dbConfiguration);
 
