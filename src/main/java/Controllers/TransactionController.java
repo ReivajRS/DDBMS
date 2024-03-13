@@ -23,6 +23,7 @@ public class TransactionController implements ActionListener {
     }
 
     public void setVisible(boolean visible){
+        transactionView.getTxtTransaction().setText("");
         transactionView.setVisible(visible);
     }
 
@@ -50,7 +51,8 @@ public class TransactionController implements ActionListener {
                     transactionView.showMessage("State not found");
                     return;
                 }
-                if(databaseConnections.getDatabases().get(zona).makeTransaction(statement)){
+                if (databaseConnections.getDatabases().get(zona).checkConnection()
+                        && databaseConnections.getDatabases().get(zona).makeTransaction(statement)) {
                     databaseConnections.getDatabases().get(zona).commitTransaction();
                     transactionView.showMessage("Customer has been added successfully");
                     return;

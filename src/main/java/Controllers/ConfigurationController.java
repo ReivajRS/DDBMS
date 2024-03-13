@@ -3,19 +3,24 @@ package Controllers;
 import Models.*;
 import Views.ConfigurationView;
 
-import javax.swing.*;
 import java.awt.event.*;
 import java.util.ArrayList;
 
 public class ConfigurationController implements ActionListener {
     private final ConfigurationView configurationView;
-    public ConfigurationController(ConfigurationView configurationView){
-        this.configurationView= configurationView;
+    private final DatabaseConnections databaseConnections;
+    public ConfigurationController(ConfigurationView configurationView, DatabaseConnections databaseConnections){
+        this.configurationView = configurationView;
+        this.databaseConnections = databaseConnections;
         setListeners();
     }
 
-    public void setVisible(boolean visible){
-        configurationView.fillTable(SingletonDatabaseConfiguration.getInstance().selectFragments());
+    public void setVisible(boolean visible) {
+        ArrayList<Fragment> fragments = SingletonDatabaseConfiguration.getInstance().selectFragments();
+        for (Fragment fragment : fragments)
+            fragment.setActive(databaseConnections.getDatabases().get(fragment.getCriteriaValue().toLowerCase())
+                    .checkConnection());
+        configurationView.fillTable(fragments);
         configurationView.setVisible(visible);
     }
 
@@ -49,7 +54,11 @@ public class ConfigurationController implements ActionListener {
             }
             configurationView.showMessage("Fragment deleted successfully, restart the application to see the changes");
 
-            configurationView.fillTable(SingletonDatabaseConfiguration.getInstance().selectFragments());
+            ArrayList<Fragment> fragments = SingletonDatabaseConfiguration.getInstance().selectFragments();
+            for (Fragment fragment : fragments)
+                fragment.setActive(databaseConnections.getDatabases().get(fragment.getCriteriaValue().toLowerCase())
+                        .checkConnection());
+            configurationView.fillTable(fragments);
 
             configurationView.refresh();
             return;

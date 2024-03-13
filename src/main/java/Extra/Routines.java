@@ -1,5 +1,7 @@
 package Extra;
 
+import javax.swing.*;
+import java.awt.*;
 import java.util.ArrayList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -24,6 +26,11 @@ public class Routines {
                 statement = statement.replace(condition, "idcliente > 0");
         }
         return statement;
+    }
+
+    public static ImageIcon resizeImage(String ico, int width, int height){
+        ImageIcon tmpIconAux = new ImageIcon(ico);
+        return new ImageIcon(tmpIconAux.getImage().getScaledInstance(width, height, Image.SCALE_SMOOTH));
     }
 
 }

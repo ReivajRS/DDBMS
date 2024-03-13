@@ -10,11 +10,13 @@ import java.util.ArrayList;
 
 public class ConfigurationView extends JDialog {
     private Table table;
+    private JLabel lblTitle, lblTable;
     private JButton btnAddFragment, btnDeleteFragment;
     private AddFragmentDialog addFragmentDialog;
 
     public ConfigurationView(){
         makeInterface();
+        setStyles();
     }
     
     private void makeInterface() {
@@ -24,11 +26,10 @@ public class ConfigurationView extends JDialog {
         setLayout(null);
         setModal(true);
 
-        JLabel lblTitle = new JLabel("Database configuration",JLabel.CENTER);
-        lblTitle.setFont(new Font("Serif", Font.BOLD, 30));
+        lblTitle = new JLabel("Database configuration",JLabel.CENTER);
 
-        JLabel lblTable = new JLabel("Distributed table: Clientes");
-        table = new Table(new String[]{"IDFragment", "DistributedTable", "DBMS", "Database", "Server", "Criteria", "CriteriaValue", "Attributes"});
+        lblTable = new JLabel("Distributed table: Clientes");
+        table = new Table(new String[]{"IDFragment", "DistributedTable", "DBMS", "Database", "Server", "Criteria", "CriteriaValue", "Attributes","Active"});
         btnAddFragment = new JButton("Add fragment");
         btnDeleteFragment = new JButton("Delete fragment");
         addFragmentDialog = new AddFragmentDialog();
@@ -46,6 +47,24 @@ public class ConfigurationView extends JDialog {
         add(btnDeleteFragment);
     }
 
+    public void setStyles() {
+        Color[] colors = new Color[]{new Color(249, 247, 247), new Color(63, 114, 175), new Color(17, 45, 78)};
+
+        lblTitle.setFont(new Font("calibri", Font.BOLD, 50));
+        lblTable.setFont(new Font("calibri", Font.PLAIN, 20));
+        Font font = new Font("calibri", Font.BOLD, 24);
+        btnAddFragment.setFont(font);
+        btnDeleteFragment.setFont(font);
+
+        btnAddFragment.setForeground(colors[0]);
+        btnDeleteFragment.setForeground(colors[0]);
+        lblTitle.setForeground(colors[2]);
+
+        getContentPane().setBackground(colors[0]);
+        btnAddFragment.setBackground(colors[1]);
+        btnDeleteFragment.setBackground(colors[1]);
+    }
+
     public void fillTable(ArrayList<Fragment> fragments){
         table.getModel().getDataVector().removeAllElements();
         for (Fragment fragment : fragments) {
@@ -58,6 +77,7 @@ public class ConfigurationView extends JDialog {
             tuple[5] = fragment.getCriteria();
             tuple[6] = fragment.getCriteriaValue();
             tuple[7] = fragment.getAttributesString();
+            tuple[8] = fragment.isActive() ? "True" : "False";
             table.getModel().addRow(tuple);
         }
         refresh();

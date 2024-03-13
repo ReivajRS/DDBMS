@@ -20,8 +20,6 @@ public class WhereAnalyzer {
 
     public boolean analyzeStatement() {
         if (tokens.getFirst() == Token.WHERE) tokens.removeFirst();
-        for (Token token : tokens) System.out.print(token + " ");
-        System.out.println();
         int i = 0;
         boolean isTheFirstCondition = true;
         while (i < tokens.size()) {
@@ -51,18 +49,13 @@ public class WhereAnalyzer {
                 while (tokens.get(i) != Token.RIGHT_PARENTHESIS &&
                         tokens.get(i) != Token.INVALID) {
                     if (tokens.get(i) == Token.WHITESPACE) i++;
-                    System.out.println(tokens.get(i));
                     if ((isStringAttribute && tokens.get(i) != Token.STRING) ||
                         (!isStringAttribute && tokens.get(i) != Token.INTEGER && tokens.get(i) != Token.NUMBER))
                         return false;
                     i++;
-                    System.out.println(tokens.get(i));
                     if (tokens.get(i) == Token.WHITESPACE) i++;
-                    System.out.println(tokens.get(i));
                     if (tokens.get(i) == Token.COMMA) i++;
-                    System.out.println(tokens.get(i));
                 }
-                System.out.println("- " + tokens.get(i));
                 if (tokens.get(i++) == Token.INVALID) return false;
                 continue;
             }

@@ -4,6 +4,7 @@ public class Fragment {
     private Integer idFragment;
     private String distributedTable, DBMS, DB, URI, accessUser, accessPassword, criteria, criteriaValue, attributesString;
     private String[] attributes;
+    private Boolean active;
 
     public Fragment(Integer idFragment, String distributedTable, String DBMS, String DB, String URI, String accessUser,
                     String accessPassword, String criteria, String criteriaValue, String attributesString) {
@@ -62,5 +63,13 @@ public class Fragment {
 
     public String[] getAttributes() {
         return attributes;
+    }
+
+    public Boolean isActive() {
+        return active;
+    }
+
+    public void setActive(Boolean active) {
+        this.active = active;
     }
 }

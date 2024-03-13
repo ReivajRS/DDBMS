@@ -4,16 +4,21 @@ import Components.Table;
 import Models.Cliente;
 
 import javax.swing.*;
+import javax.swing.border.Border;
 import java.awt.*;
 import java.util.ArrayList;
+import java.util.Vector;
 
 public class QueryView extends JDialog {
     private JButton btnSearch;
     private JTextArea txtQuery;
     private Table table;
+    private JLabel lblTitle, lblEnter;
+
 
     public QueryView(){
         makeInterface();
+        setStyles();
     }
 
     private void makeInterface() {
@@ -23,18 +28,17 @@ public class QueryView extends JDialog {
         setLayout(null);
         setModal(true);
 
-        JLabel lblTitle = new JLabel("Query",JLabel.CENTER);
-        lblTitle.setFont(new Font("Serif", Font.BOLD, 30));
-        JLabel lblEnter = new JLabel("Enter the query",JLabel.CENTER);
+        lblTitle = new JLabel("Query",JLabel.CENTER);
+        lblEnter = new JLabel("Enter the query",JLabel.CENTER);
+
         table = new Table(new String[]{"idCliente","Nombre","Estado","Credito","Deuda"});
         txtQuery = new JTextArea();
-        txtQuery.setFont(new Font("tahoma", Font.PLAIN, 14));
-        lblEnter.setFont(new Font("Serif", Font.PLAIN, 18));
         btnSearch = new JButton("Search");
 
 
         lblTitle.setBounds(100, 20, 600, 60);
         lblEnter.setBounds(100,90,600,30);
+
         txtQuery.setBounds(100,130,600,60);
         btnSearch.setBounds(100,200,600,40);
 
@@ -47,15 +51,52 @@ public class QueryView extends JDialog {
         add(table);
     }
 
+    public void setStyles() {
+        Color[] colors = new Color[]{new Color(249, 247, 247), new Color(63, 114, 175), new Color(17, 45, 78)};
+
+        lblTitle.setFont(new Font("calibri", Font.BOLD, 50));
+        lblEnter.setFont(new Font("calibri", Font.PLAIN, 20));
+        txtQuery.setFont(new Font("calibri", Font.PLAIN, 16));
+        Font font = new Font("calibri", Font.BOLD, 24);
+        btnSearch.setFont(font);
+
+        btnSearch.setForeground(colors[0]);
+        lblTitle.setForeground(colors[2]);
+
+        getContentPane().setBackground(colors[0]);
+        btnSearch.setBackground(colors[1]);
+
+        txtQuery.setBorder(BorderFactory.createLineBorder(colors[2]));
+    }
+
+    private Object[] getAttributes(Cliente customer) {
+        return new Object[]{
+                customer.getIdcliente(), customer.getNombre(),
+                customer.getEstado(), customer.getCredito(),
+                customer.getDeuda()
+        };
+    }
+
     public void fillTable(ArrayList<Cliente> customers) {
         table.getModel().getDataVector().removeAllElements();
+
+        if (customers.isEmpty()) return;
+
+        Object[] firstClientAttributes = getAttributes(customers.getFirst());
+        String[] headers = {"IdCliente", "Nombre", "Estado", "Credito", "Deuda"};
+
+        Vector<String> columnHeaders = new Vector<>();
+        for (int i = 0; i < 5; i++)
+            if (firstClientAttributes[i] != null)
+                columnHeaders.add(headers[i]);
+        table.getModel().setColumnIdentifiers(columnHeaders);
+
         for (Cliente customer : customers) {
+            Object[] clientAttributes = getAttributes(customer);
             String[] tuple = new String[table.getTable().getColumnCount()];
-            tuple[0] = customer.getIdcliente() == null ? "" :customer.getIdcliente()+"";
-            tuple[1] = customer.getNombre() == null ? "" : customer.getNombre();
-            tuple[2] = customer.getEstado() == null ? "" : customer.getEstado();
-            tuple[3] = customer.getCredito() == null ? "" : customer.getCredito()+"";
-            tuple[4] = customer.getDeuda() == null ? "" : customer.getDeuda()+"";
+            for (int i = 0, j = 0; i < 5; i++)
+                if (clientAttributes[i] != null)
+                    tuple[j++] = clientAttributes[i].toString(); //... ha quedado
             table.getModel().addRow(tuple);
         }
         refresh();
@@ -78,6 +119,4 @@ public class QueryView extends JDialog {
     public JTextArea getTxtQuery() {
         return txtQuery;
     }
-
-    public Table getTable(){return table;}
 }

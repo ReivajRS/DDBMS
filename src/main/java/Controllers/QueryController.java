@@ -21,6 +21,7 @@ public class QueryController implements ActionListener {
     }
 
     public void setVisible(boolean visible){
+        queryView.getTxtQuery().setText("");
         queryView.setVisible(visible);
     }
 

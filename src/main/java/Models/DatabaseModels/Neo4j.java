@@ -99,7 +99,6 @@ public class Neo4j extends Database {
                 transaction = insertParts[0] + " VALUES " + insertParts[1];
             }
             String cypherTransaction = connection.nativeSQL(transaction);
-            System.out.println(cypherTransaction);
             connection.setAutoCommit(false);
             Statement st = connection.createStatement();
             st.executeUpdate(cypherTransaction);
