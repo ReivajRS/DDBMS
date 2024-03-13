@@ -5,7 +5,7 @@ import Compiler.TokenArrayList;
 import java.util.HashMap;
 
 public class LexicalAnalyzer {
-    private HashMap<String, Token> keywordsAndTokens;
+    private final HashMap<String, Token> keywordsAndTokens;
     private String inputText;
 
     public LexicalAnalyzer(String inputText) {
