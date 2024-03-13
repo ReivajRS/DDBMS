@@ -133,6 +133,7 @@ public class MongoDB extends Database{
     @Override
     public boolean makeTransaction(String statement) {
         statement = statement.toLowerCase().trim();
+        System.out.println(statement);
 
         // INSERT
         if (statement.contains("insert")) {

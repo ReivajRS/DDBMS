@@ -110,11 +110,12 @@ public class TransactionController implements ActionListener {
                         System.out.println("Request to fragment " + zone);
                         databases.add(databaseConnections.getDatabases().get(zone.toLowerCase()));
                         databases.getLast().setStatement(statement);
-                        threads[i++] = new Thread(databaseConnections.getDatabases().get(zone));
+                        threads[i++] = new Thread(databaseConnections.getDatabases().get(zone.toLowerCase()));
                     }
 
-                    for (Thread thread : threads)
+                    for (Thread thread : threads) {
                         thread.start();
+                    }
 
                     while (Routines.someThreadIsRunning(threads));
 

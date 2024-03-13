@@ -13,7 +13,7 @@ import java.util.Arrays;
 
 public class Main {
     public static void main(String[] args) {
-        SQLServer dbConfiguration = new SQLServer("25.2.140.49", "DBConfiguration", "sa", "sa");
+        SQLServer dbConfiguration = new SQLServer("localhost", "DBConfiguration", "sa", "sa");
         DatabaseConnections databaseConnections = new DatabaseConnections(dbConfiguration.selectFragments());
 
         // VISTAS

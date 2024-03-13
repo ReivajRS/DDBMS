@@ -12,7 +12,7 @@ public class SyntaxAnalyzer {
             case INSERT -> new InsertAnalyzer(tokens).analyzeStatement();
             case UPDATE -> new UpdateAnalyzer(tokens).analyzeStatement();
             case DELETE -> new DeleteAnalyzer(tokens).analyzeStatement();
-            default -> true;
+            default -> false;
         };
     }
 }
