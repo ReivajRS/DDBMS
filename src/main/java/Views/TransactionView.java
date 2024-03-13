@@ -38,6 +38,10 @@ public class TransactionView extends JDialog {
         add(btnExecute);
     }
 
+    public void showMessage(String message) {
+        JOptionPane.showMessageDialog(this, message);
+    }
+
     public JButton getBtnExecute() {
         return btnExecute;
     }

@@ -1,9 +1,11 @@
 package Views;
 
 import Components.Table;
+import Models.Cliente;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.ArrayList;
 
 public class QueryView extends JDialog {
     private JButton btnSearch;
@@ -45,9 +47,28 @@ public class QueryView extends JDialog {
         add(table);
     }
 
+    public void fillTable(ArrayList<Cliente> customers) {
+        table.getModel().getDataVector().removeAllElements();
+        for (Cliente customer : customers) {
+            String[] tuple = new String[table.getTable().getColumnCount()];
+            tuple[0] = customer.getIdcliente() == null ? "" :customer.getIdcliente()+"";
+            tuple[1] = customer.getNombre() == null ? "" : customer.getNombre();
+            tuple[2] = customer.getEstado() == null ? "" : customer.getEstado();
+            tuple[3] = customer.getCredito() == null ? "" : customer.getCredito()+"";
+            tuple[4] = customer.getDeuda() == null ? "" : customer.getDeuda()+"";
+            table.getModel().addRow(tuple);
+        }
+        refresh();
+        showMessage("Refreshed table");
+    }
+
     public void refresh() {
         revalidate();
         repaint();
+    }
+
+    public void showMessage(String message){
+        JOptionPane.showMessageDialog(this, message);
     }
 
     public JButton getBtnSearch() {

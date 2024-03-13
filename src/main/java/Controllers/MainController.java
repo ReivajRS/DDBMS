@@ -1,7 +1,6 @@
 package Controllers;
 
 import Models.DatabaseConnections;
-import Models.SQLServer;
 import Views.ConfigurationView;
 import Views.MainView;
 import Views.QueryView;
@@ -11,19 +10,18 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 public class MainController implements ActionListener {
-    private MainView mainView;
-    private ConfigurationController configurationController;
-    private TransactionController transactionController;
-    private QueryController queryController;
-    private DatabaseConnections databaseConnections;
+    private final MainView mainView;
+    private final ConfigurationController configurationController;
+    private final TransactionController transactionController;
+    private final QueryController queryController;
 
     public MainController(MainView mainView, ConfigurationView configurationView, TransactionView transactionView,
-                          QueryView queryView, DatabaseConnections databaseConnections, SQLServer dbConfiguration) {
+                          QueryView queryView, DatabaseConnections databaseConnections) {
         this.mainView = mainView;
 
-        this.configurationController = new ConfigurationController(configurationView, dbConfiguration);
-        this.transactionController = new TransactionController(transactionView, databaseConnections,dbConfiguration);
-        this.queryController = new QueryController(queryView, databaseConnections,dbConfiguration);
+        this.configurationController = new ConfigurationController(configurationView);
+        this.transactionController = new TransactionController(transactionView, databaseConnections);
+        this.queryController = new QueryController(queryView, databaseConnections);
 
         setListeners();
     }

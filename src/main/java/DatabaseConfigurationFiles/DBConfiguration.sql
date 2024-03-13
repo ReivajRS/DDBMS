@@ -21,9 +21,6 @@ INSERT INTO Fragment VALUES
 ('Clientes', 'SQL Server', 'tesebada', 'localhost', 'sa', 'sa', 'Zona', 'Norte', 'IdCliente,Nombre,Estado,Credito,Deuda'),
 ('Clientes', 'Mongo DB', 'tesebada', '@cluster0.szlfm.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0', 'carlosdaniel', '7rLrp3XKjgVR5WmM', 'Zona', 'Centro', 'IdCliente,Nombre,Estado,Credito,Deuda'),
 ('Clientes', 'Neo4j', 'tesebada', 'neo4j+s://883e4884.databases.neo4j.io', 'neo4j', '_aItXcqUubEUCoCcH6YLZwMro2SysElEYlRYTJupsI4', 'Zona', 'Sur', 'IdCliente,Nombre,Estado,Credito,Deuda')
---('Cliente', 'SQL Server', 'tesebada', 'localhost', 'Zona', 'IdCliente,Nombre,Estado,Credito,Deuda'),
---('Cliente', 'Mongo DB', 'tesebada', 'mongodb+srv://carlosdaniel:7rLrp3XKjgVR5WmM@cluster0.szlfm.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0', 'Zona', 'IdCliente,Nombre,Estado,Credito,Deuda'),
---('Cliente', 'Neo4j', 'tesebada', 'neo4j+s://883e4884.databases.neo4j.io', 'Zona', 'IdCliente,Nombre,Estado,Credito,Deuda')
 
 CREATE TABLE CLIENTES(
     IDCLIENTE INT PRIMARY KEY ,
